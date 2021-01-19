@@ -18,6 +18,7 @@ curl -sLO https://raw.githubusercontent.com/inlets/inlets-pro/master/artifacts/i
   mv inlets-pro.service /etc/systemd/system/inlets-pro.service && \
   echo "AUTHTOKEN=$AUTHTOKEN" >> /etc/default/inlets-pro && \
   echo "IP=$IP" >> /etc/default/inlets-pro && \
+  systemctl daemon-reload && \
   systemctl start inlets-pro && \
   systemctl enable inlets-pro
 `
@@ -37,6 +38,7 @@ curl -sLO https://raw.githubusercontent.com/inlets/inlets/master/hack/inlets-ope
 mv inlets-operator.service /etc/systemd/system/inlets.service && \
 echo "AUTHTOKEN=$AUTHTOKEN" > /etc/default/inlets && \
 echo "CONTROLPORT=$CONTROLPORT" >> /etc/default/inlets && \
+systemctl daemon-reload && \
 systemctl start inlets && \
 systemctl enable inlets
 `
