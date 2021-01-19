@@ -1,4 +1,4 @@
-module github.com/inlets/cloud-provision
+module github.com/inlets/cloud-provision/provision
 
 go 1.15
 
