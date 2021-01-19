@@ -1,4 +1,4 @@
-# provision cloud hosts with user-data
+# Provision instances on public cloud with cloud-init
 
 This package can be used to provision cloud hosts using a simple CRUD-style API along with a cloud-init user-data script. It could be used to automate anything from k3s clusters, to blogs, or CI runners. We use it to create the cheapest possible hosts in the cloud with a public IP address.
 
@@ -11,6 +11,10 @@ type Provisioner interface {
 	Delete(HostDeleteRequest) error
 }
 ```
+
+## Try the example
+
+See the example here: [Tester app](https://github.com/inlets/cloud-provision/tree/master/cmd)
 
 ## Usage of the package
 
