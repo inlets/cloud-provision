@@ -18,6 +18,7 @@ require (
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-retryablehttp v0.6.6
 	github.com/hetznercloud/hcloud-go v1.18.2
+	github.com/inlets/inletsctl v0.0.0-20210119121609-ba39a5f3caa6
 	github.com/linode/linodego v0.19.0
 	github.com/morikuni/aec v1.0.0
 	github.com/packethost/packngo v0.5.1
