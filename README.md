@@ -1,6 +1,8 @@
-# Provision instances on public cloud with cloud-init
+## cloud-provision
 
-This package can be used to provision cloud hosts using a simple CRUD-style API along with a cloud-init user-data script. It could be used to automate anything from k3s clusters, to blogs, or CI runners. We use it to create the cheapest possible hosts in the cloud with a public IP address.
+> Get cloud instances with your favourite software pre-loaded
+
+This Golang package can be used to provision cloud hosts using a simple CRUD-style API along with a cloud-init user-data script. It could be used to automate anything from k3s clusters, to blogs, or CI runners. We use it to create the cheapest possible hosts in the cloud with a public IP address.
 
 [provision.go](https://github.com/inlets/inletsctl/blob/master/pkg/provision/provision.go)
 
@@ -12,16 +14,29 @@ type Provisioner interface {
 }
 ```
 
-## Try the example
+## Where is this package used?
 
-See the example here: [Tester app](https://github.com/inlets/cloud-provision/tree/master/cmd)
-
-## Usage of the package
+> Feel free to send a PR to add your project
 
 This package is used by:
 
 * [inletsctl](https://github.com/inlets/inletsctl) - Go CLI to create/delete exit-servers and inlets/-pro tunnels
 * [inlets-operator](https://github.com/inlets/inlets-operator) - Kubernetes operator to automate exit-servers and inlets/-pro tunnels via CRDs and Service definitions
+
+### Try an example program
+
+The tester app takes in a cloud-config file and provisions a host with Nginx - polling until it is ready for access.
+
+```yaml
+#cloud-config
+packages:
+  - nginx
+runcmd:
+  - systemctl enable nginx
+  - systemctl start nginx
+```
+
+See the example here: [Tester app](https://github.com/inlets/cloud-provision/tree/master/cmd)
 
 ## Rules for adding a new provisioner
 
