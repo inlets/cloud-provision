@@ -9,7 +9,7 @@ import (
 )
 
 func Test_makeUserdata_InletsOSS(t *testing.T) {
-	userData := MakeExitServerUserdata(8080, "auth", "2.7.4", "0.7.0", false)
+	userData := MakeExitServerUserdata(8080, "auth", "0.7.0", false)
 
 	wantUserdata := `#!/bin/bash
 export AUTHTOKEN="auth"
