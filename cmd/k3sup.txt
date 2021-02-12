@@ -1,0 +1,5 @@
+#!/bin/bash
+
+curl -SLs https://k3sup.dev | sh
+k3sup install --local --k3s-channel stable
+
