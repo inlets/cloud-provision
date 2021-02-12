@@ -8,11 +8,11 @@ func MakeExitServerUserdata(authToken, version string) string {
 export AUTHTOKEN="` + authToken + `"
 export IP=$(curl -sfSL https://checkip.amazonaws.com)
 
-curl -SLsf https://github.com/inlets/inlets-pro/releases/download/` + version + `/inlets-pro > /tmp/inlets-pro && \
+curl -SLsf https://github.com/inlets/inlets-pro/releases/download/` + version + `/inlets-pro -o /tmp/inlets-pro && \
   chmod +x /tmp/inlets-pro  && \
   mv /tmp/inlets-pro /usr/local/bin/inlets-pro
 
-curl -sLO https://raw.githubusercontent.com/inlets/inlets-pro/` + version + `/artifacts/inlets-pro.service  && \
+curl -SLsf https://github.com/inlets/inlets-pro/releases/download/` + version + `/inlets-pro.service -o inlets-pro.service && \
   mv inlets-pro.service /etc/systemd/system/inlets-pro.service && \
   echo "AUTHTOKEN=$AUTHTOKEN" >> /etc/default/inlets-pro && \
   echo "IP=$IP" >> /etc/default/inlets-pro && \
