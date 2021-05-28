@@ -37,6 +37,17 @@ func (p *GCEProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 	// instance auto restart on failure
 	autoRestart := true
 
+	var serviceAccounts []*compute.ServiceAccount
+
+	if len(host.Additional["service_account"]) != 0 {
+		serviceAccounts = append(serviceAccounts, &compute.ServiceAccount{
+			Email: host.Additional["service_account"],
+			Scopes: []string{
+				compute.ComputeScope,
+			},
+		})
+	}
+
 	instance := &compute.Instance{
 		Name:         host.Name,
 		Description:  "Exit node created by inlets-operator",
@@ -91,14 +102,7 @@ func (p *GCEProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 				Network: "global/networks/default",
 			},
 		},
-		ServiceAccounts: []*compute.ServiceAccount{
-			{
-				Email: "default",
-				Scopes: []string{
-					compute.ComputeScope,
-				},
-			},
-		},
+		ServiceAccounts: serviceAccounts,
 	}
 
 	op, err := p.gceProvisioner.Instances.Insert(
