@@ -4,7 +4,6 @@
 package provision
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -170,8 +169,12 @@ func getDefaultNetwork(key, region string) (*Network, error) {
 	if err != nil {
 		return nil, err
 	}
-	networks := make([]Network, 0)
-	json.NewDecoder(bytes.NewReader(body)).Decode(&networks)
+
+	networks := []Network{}
+	if err := json.Unmarshal(body, &networks); err != nil {
+		return nil, err
+	}
+
 	for _, network := range networks {
 		if network.Default {
 			return &network, nil
