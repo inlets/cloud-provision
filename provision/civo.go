@@ -4,7 +4,9 @@
 package provision
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -19,6 +21,15 @@ import (
 // CivoProvisioner creates instances on civo.com
 type CivoProvisioner struct {
 	APIKey string
+}
+
+// Network represents a network for civo vm instances to connect to
+type Network struct {
+	ID      string `json:"id"`
+	Name    string `json:"name,omitempty"`
+	Default bool   `json:"default,omitempty"`
+	CIDR    string `json:"cidr,omitempty"`
+	Label   string `json:"label,omitempty"`
 }
 
 // NewCivoProvisioner with an accessKey
@@ -150,18 +161,44 @@ func (p *CivoProvisioner) lookupID(request HostDeleteRequest) (string, error) {
 	return "", fmt.Errorf("no host with ip: %s", request.IP)
 }
 
+// gets the default network for the selected region.
+func getDefaultNetwork(key, region string) (*Network, error) {
+	apiURL := "https://api.civo.com/v2/networks"
+	values := url.Values{}
+	values.Add("region", region)
+	body, err := apiCall(key, http.MethodGet, apiURL, strings.NewReader(values.Encode()))
+	if err != nil {
+		return nil, err
+	}
+	networks := make([]Network, 0)
+	json.NewDecoder(bytes.NewReader(body)).Decode(&networks)
+	for _, network := range networks {
+		if network.Default {
+			return &network, nil
+		}
+	}
+	return nil, errors.New("no default network found")
+}
+
 func provisionCivoInstance(host BasicHost, key string) (createdInstance, error) {
 	instance := createdInstance{}
+
+	network, err := getDefaultNetwork(key, host.Region)
+	if err != nil {
+		return instance, err
+	}
 
 	apiURL := "https://api.civo.com/v2/instances"
 
 	values := url.Values{}
 	values.Add("hostname", host.Name)
 	values.Add("size", host.Plan)
-	values.Add("public_ip", "true")
+	values.Add("public_ip", "create")
 	values.Add("template_id", host.OS)
 	values.Add("initial_user", "civo")
 	values.Add("script", host.UserData)
+	values.Add("region", host.Region)
+	values.Add("network_id", network.ID)
 	values.Add("tags", "inlets")
 
 	body, err := apiCall(key, http.MethodPost, apiURL, strings.NewReader(values.Encode()))
