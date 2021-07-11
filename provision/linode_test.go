@@ -2,6 +2,7 @@ package provision
 
 import (
 	"fmt"
+	"github.com/inlets/cloud-provision/provision/mock"
 	"net"
 	"testing"
 
@@ -13,7 +14,7 @@ import (
 func Test_Linode_Provision(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockClient := newMockLinodeInterface(mockCtrl)
+	mockClient := mock.NewMockLinodeInterface(mockCtrl)
 	provisioner := &LinodeProvisioner{
 		client: mockClient,
 	}
@@ -70,7 +71,7 @@ func Test_Linode_Provision(t *testing.T) {
 func Test_Linode_StatusBooting(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockClient := newMockLinodeInterface(mockCtrl)
+	mockClient := mock.NewMockLinodeInterface(mockCtrl)
 	provisioner := &LinodeProvisioner{
 		client: mockClient,
 	}
@@ -96,7 +97,7 @@ func Test_Linode_StatusBooting(t *testing.T) {
 func Test_Linode_StatusActive(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockClient := newMockLinodeInterface(mockCtrl)
+	mockClient := mock.NewMockLinodeInterface(mockCtrl)
 	provisioner := &LinodeProvisioner{
 		client:        mockClient,
 		stackscriptID: 10,
@@ -126,7 +127,7 @@ func Test_Linode_StatusActive(t *testing.T) {
 func Test_Linode_Delete(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
-	mockClient := newMockLinodeInterface(mockCtrl)
+	mockClient := mock.NewMockLinodeInterface(mockCtrl)
 	provisioner := &LinodeProvisioner{
 		client: mockClient,
 	}
