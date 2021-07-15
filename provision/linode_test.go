@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/inlets/inletsctl/mock"
 
 	"github.com/linode/linodego"
 )
