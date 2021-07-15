@@ -17,12 +17,17 @@ type EC2Provisioner struct {
 	ec2Provisioner *ec2.EC2
 }
 
-// NewEC2Provisioner creates an EC2Provisioner and initialises an EC2 client
+// NewEC2Provisioner creates an EC2Provisioner and initialises an EC2 client,
+// when accessKey and secretKey are "" default credential chain is used
 func NewEC2Provisioner(region, accessKey, secretKey string) (*EC2Provisioner, error) {
-	sess, err := session.NewSession(&aws.Config{
-		Region:      aws.String(region),
-		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
-	})
+	awsConfig := &aws.Config{Region: aws.String(region)}
+
+	if accessKey != "" && secretKey != "" {
+		awsConfig.Credentials = credentials.NewStaticCredentials(accessKey, secretKey, "")
+	}
+
+	sess, err := session.NewSession(awsConfig)
+
 	svc := ec2.New(sess)
 	return &EC2Provisioner{ec2Provisioner: svc}, err
 }
