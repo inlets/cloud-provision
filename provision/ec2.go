@@ -18,10 +18,10 @@ type EC2Provisioner struct {
 }
 
 // NewEC2Provisioner creates an EC2Provisioner and initialises an EC2 client
-func NewEC2Provisioner(region, accessKey, secretKey string) (*EC2Provisioner, error) {
+func NewEC2Provisioner(region, accessKey, secretKey, sessionToken string) (*EC2Provisioner, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region:      aws.String(region),
-		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, ""),
+		Credentials: credentials.NewStaticCredentials(accessKey, secretKey, sessionToken),
 	})
 	svc := ec2.New(sess)
 	return &EC2Provisioner{ec2Provisioner: svc}, err
