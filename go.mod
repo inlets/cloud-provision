@@ -20,7 +20,7 @@ require (
 	github.com/hetznercloud/hcloud-go v1.18.2
 	github.com/linode/linodego v0.19.0
 	github.com/morikuni/aec v1.0.0
-	github.com/packethost/packngo v0.5.1
+	github.com/packethost/packngo v0.17.0
 	github.com/pkg/errors v0.9.1
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.4
 	github.com/sethvargo/go-password v0.2.0
