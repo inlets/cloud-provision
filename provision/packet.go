@@ -17,7 +17,7 @@ func NewEquinixMetalProvisioner(accessKey string) (*EquinixMetalProvisioner, err
 	httpClient := retryablehttp.NewClient()
 
 	return &EquinixMetalProvisioner{
-		client: packngo.NewClientWithAuth("", accessKey, httpClient),
+		client: packngo.NewClientWithAuth("", accessKey, httpClient.HTTPClient),
 	}, nil
 }
 
@@ -66,9 +66,8 @@ func (p *EquinixMetalProvisioner) Delete(request HostDeleteRequest) error {
 // Provision a host
 func (p *EquinixMetalProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 	if host.Region == "" {
-		host.Region = "ams1"
+		host.Region = "am6"
 	}
-
 	createReq := &packngo.DeviceCreateRequest{
 		Plan:         host.Plan,
 		Facility:     []string{host.Region},
@@ -79,6 +78,7 @@ func (p *EquinixMetalProvisioner) Provision(host BasicHost) (*ProvisionedHost, e
 		BillingCycle: "hourly",
 		UserData:     host.UserData,
 		Tags:         []string{"inlets"},
+		NoSSHKeys:    true,
 	}
 
 	device, _, err := p.client.Devices.Create(createReq)

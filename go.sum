@@ -191,6 +191,8 @@ github.com/packethost/packngo v0.2.0 h1:mSlzOof8PsOWCy78sBMt/PwMJTEjjQ/rRvMixu4N
 github.com/packethost/packngo v0.2.0/go.mod h1:RQHg5xR1F614BwJyepfMqrKN+32IH0i7yX+ey43rEeQ=
 github.com/packethost/packngo v0.5.1 h1:y+jWcMnyArP3hVZRsBkAXTLhokuqdYg6JUmkshX2SMk=
 github.com/packethost/packngo v0.5.1/go.mod h1:aRxUEV1TprXVcWr35v8tNYgZMjv7FHaInXx224vF2fc=
+github.com/packethost/packngo v0.17.0 h1:fGPlj9NDt6ejOrAMfUgx955oCaR1QBKA9pec14m0L38=
+github.com/packethost/packngo v0.17.0/go.mod h1:YrtUNN9IRjjqN6zK+cy2IYoi3EjHfoWTWxJkI1I1Vk0=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/peterbourgon/diskv v2.0.1+incompatible/go.mod h1:uqqh8zWWbv1HBMNONnaR/tNboyR3/BZd58JJSHlUSCU=
 github.com/pkg/errors v0.8.1 h1:iURUrRGxPUNPdy5/HRSm+Yj6okJ6UtLINN0Q9M4+h3I=
