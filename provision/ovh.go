@@ -2,6 +2,7 @@ package provision
 
 import (
 	"context"
+	"fmt"
 	ovhsdk "github.com/dirien/ovh-go-sdk/pkg/sdk"
 )
 
@@ -75,8 +76,32 @@ func (o *OVHProvisioner) Status(id string) (*ProvisionedHost, error) {
 	}, nil
 }
 
+func (o *OVHProvisioner) lookupID(request HostDeleteRequest) (string, error) {
+	instances, err := o.client.ListInstance(context.Background())
+	if err != nil {
+		return "", err
+	}
+	for _, instance := range instances {
+		ip4, _ := ovhsdk.IPv4(&instance)
+		if ip4 == request.IP {
+			return instance.ID, nil
+		}
+	}
+	return "", fmt.Errorf("no host with ip: %s", request.IP)
+}
+
 func (o *OVHProvisioner) Delete(request HostDeleteRequest) error {
-	err := o.client.DeleteInstance(context.Background(), request.ID)
+	var id string
+	var err error
+	if len(request.ID) > 0 {
+		id = request.ID
+	} else {
+		id, err = o.lookupID(request)
+		if err != nil {
+			return err
+		}
+	}
+	err = o.client.DeleteInstance(context.Background(), id)
 	if err != nil {
 		return err
 	}
