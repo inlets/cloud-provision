@@ -44,8 +44,7 @@ The first rule about the `provision` package is that we don't do SSH. Key manage
 
 * Use the Ubuntu 16.04 LTS image
 * Select the cheapest plan and update the [README](https://github.com/inlets/inletsctl/blob/master/README.md) with the estimated monthly cost
-* For inlets OSS open just the required ports
-* For inlets-pro you must open all ports since the client advertises, not the server
+* You need to open all ports on any firewall rules since the inlets client advertises its ports at runtime
 * This API is event-driven and is expected to use polling from the Kubernetes Operator or inletsctl CLI, not callbacks or waits
 * Do not use any wait or blocking calls, all API calls should return ideally within < 1s
 * Document how you chose any image or configuration, so that the code can be maintained, so that means links and `// comments`
