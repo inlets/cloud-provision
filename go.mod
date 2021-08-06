@@ -16,13 +16,13 @@ require (
 	github.com/golang/groupcache v0.0.0-20191027212112-611e8accdfc9 // indirect
 	github.com/golang/mock v1.3.1
 	github.com/google/uuid v1.1.1
-	github.com/hashicorp/go-retryablehttp v0.6.6
+	github.com/hashicorp/go-retryablehttp v0.7.0
 	github.com/hetznercloud/hcloud-go v1.18.2
 	github.com/linode/linodego v0.19.0
 	github.com/packethost/packngo v0.17.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.4
 	github.com/sethvargo/go-password v0.2.0
-	github.com/vultr/govultr v0.3.2
+	github.com/vultr/govultr/v2 v2.7.1 // indirect
 	go.opencensus.io v0.22.2 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d
 	google.golang.org/api v0.14.0
