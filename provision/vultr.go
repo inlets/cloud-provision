@@ -2,8 +2,10 @@ package provision
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
-	"github.com/vultr/govultr"
+	"github.com/vultr/govultr/v2"
+	"golang.org/x/oauth2"
 	"strconv"
 	"strings"
 )
@@ -16,24 +18,20 @@ type VultrProvisioner struct {
 }
 
 func NewVultrProvisioner(accessKey string) (*VultrProvisioner, error) {
+	config := &oauth2.Config{}
+	ts := config.TokenSource(context.Background(), &oauth2.Token{AccessToken: accessKey})
+	vultrClient := govultr.NewClient(oauth2.NewClient(context.Background(), ts))
 	return &VultrProvisioner{
-		client: govultr.NewClient(nil, accessKey),
+		client: vultrClient,
 	}, nil
 }
 
 func (v *VultrProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
-
-	script, err := v.client.StartupScript.Create(context.Background(), host.Name, host.UserData, "boot")
-	if err != nil {
-		return nil, err
-	}
-
-	region, err := v.lookupRegion(host.Region)
-	if err != nil {
-		return nil, err
-	}
-
-	plan, err := strconv.Atoi(host.Plan)
+	script, err := v.client.StartupScript.Create(context.Background(), &govultr.StartupScriptReq{
+		Script: base64.StdEncoding.EncodeToString([]byte(host.UserData)),
+		Name:   host.Name,
+		Type:   "boot",
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -43,39 +41,42 @@ func (v *VultrProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 		return nil, err
 	}
 
-	opts := &govultr.ServerOptions{
-		ScriptID: script.ScriptID,
+	opts := &govultr.InstanceCreateReq{
+		ScriptID: script.ID,
+		Region:   host.Region,
+		Plan:     host.Plan,
+		OsID:     os,
 		Hostname: host.Name,
 		Label:    host.Name,
 		Tag:      exiteNodeTag,
 	}
 
-	result, err := v.client.Server.Create(context.Background(), *region, plan, os, opts)
+	result, err := v.client.Instance.Create(context.Background(), opts)
 	if err != nil {
 		return nil, err
 	}
 
 	return &ProvisionedHost{
 		IP:     result.MainIP,
-		ID:     result.InstanceID,
-		Status: result.ServerState,
+		ID:     result.ID,
+		Status: result.ServerStatus,
 	}, nil
 }
 
 func (v *VultrProvisioner) Status(id string) (*ProvisionedHost, error) {
-	server, err := v.client.Server.GetServer(context.Background(), id)
+	server, err := v.client.Instance.Get(context.Background(), id)
 	if err != nil {
 		return nil, err
 	}
 
-	status := server.ServerState
-	if status == "ok" {
+	status := server.ServerStatus
+	if status == vultrHostRunning {
 		status = ActiveStatus
 	}
 
 	return &ProvisionedHost{
 		IP:     server.MainIP,
-		ID:     server.InstanceID,
+		ID:     server.ID,
 		Status: status,
 	}, nil
 }
@@ -92,20 +93,20 @@ func (v *VultrProvisioner) Delete(request HostDeleteRequest) error {
 		}
 	}
 
-	server, err := v.client.Server.GetServer(context.Background(), id)
+	server, err := v.client.Instance.Get(context.Background(), id)
 	if err != nil {
 		return err
 	}
 
-	err = v.client.Server.Delete(context.Background(), id)
+	err = v.client.Instance.Delete(context.Background(), id)
 	if err != nil {
 		return err
 	}
 
-	scripts, err := v.client.StartupScript.List(context.Background())
+	scripts, _, err := v.client.StartupScript.List(context.Background(), nil)
 	for _, s := range scripts {
 		if s.Name == server.Label {
-			_ = v.client.StartupScript.Delete(context.Background(), s.ScriptID)
+			_ = v.client.StartupScript.Delete(context.Background(), s.ID)
 			break
 		}
 	}
@@ -115,19 +116,22 @@ func (v *VultrProvisioner) Delete(request HostDeleteRequest) error {
 
 // List returns a list of exit nodes
 func (v *VultrProvisioner) List(filter ListFilter) ([]*ProvisionedHost, error) {
-	servers, err := v.client.Server.ListByTag(context.Background(), filter.Filter)
+	servers, _, err := v.client.Instance.List(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var inlets []*ProvisionedHost
 	for _, server := range servers {
-		host := &ProvisionedHost{
-			IP:     server.MainIP,
-			ID:     server.InstanceID,
-			Status: vultrToInletsStatus(server.Status),
+		if server.Tag == filter.Filter {
+			host := &ProvisionedHost{
+				IP:     server.MainIP,
+				ID:     server.ID,
+				Status: vultrToInletsStatus(server.Status),
+			}
+			inlets = append(inlets, host)
 		}
-		inlets = append(inlets, host)
+
 	}
 
 	return inlets, nil
@@ -135,7 +139,7 @@ func (v *VultrProvisioner) List(filter ListFilter) ([]*ProvisionedHost, error) {
 
 func (v *VultrProvisioner) lookupID(request HostDeleteRequest) (string, error) {
 
-	inlets, err := v.List(ListFilter{Filter: exiteNodeTag, ProjectID: request.ProjectID})
+	inlets, err := v.List(ListFilter{Filter: exiteNodeTag})
 	if err != nil {
 		return "", err
 	}
@@ -153,14 +157,14 @@ func (v *VultrProvisioner) lookupRegion(id string) (*int, error) {
 		return &result, nil
 	}
 
-	regions, err := v.client.Region.List(context.Background())
+	regions, _, err := v.client.Region.List(context.Background(), nil)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, region := range regions {
-		if strings.EqualFold(id, region.RegionCode) || strings.EqualFold(id, region.Name) {
-			regionId, _ := strconv.Atoi(region.RegionID)
+		if strings.EqualFold(id, region.ID) {
+			regionId, _ := strconv.Atoi(region.ID)
 			return &regionId, nil
 		}
 	}
