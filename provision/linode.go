@@ -66,6 +66,10 @@ func NewLinodeProvisioner(apiKey string) (*LinodeProvisioner, error) {
 // Provision provisions a new Linode instance as an exit node
 func (p *LinodeProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 
+	if len(host.Name) > 32 {
+		return nil, fmt.Errorf("name cannot be longer than 32 characters for Linode due to label limitations")
+	}
+
 	// Stack script is how linode does the cloud-init when provisioning a VM.
 	// Stack script is the inlets user data containing inlets auth token.
 	// Making stack script public will allow everyone to read the stack script
