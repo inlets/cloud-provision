@@ -11,7 +11,7 @@ func Test_Azure_Auth_Contents_Invalid(t *testing.T) {
 	_, err := NewAzureProvisioner("SubscriptionID", "invalid contents")
 
 	if err == nil {
-		t.Errorf("want: error, but got: nil")
+		t.Fatalf("want: error, but got: nil")
 	}
 }
 

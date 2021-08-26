@@ -31,9 +31,15 @@ func Test_Linode_Provision(t *testing.T) {
 	returnedStackscript := &linodego.Stackscript{ID: 10}
 
 	expectedInstanceOptions := linodego.InstanceCreateOptions{
-		Label: "inlets-" + host.Name, StackScriptID: returnedStackscript.ID,
-		Image: host.OS, Region: host.Region, Type: host.Plan, RootPass: "testpass",
+		Label:         host.Name,
+		StackScriptID: returnedStackscript.ID,
+		Image:         host.OS,
+		Region:        host.Region,
+		Type:          host.Plan,
+		RootPass:      "testpass",
+		Tags:          []string{"inlets"},
 	}
+
 	returnedInstance := &linodego.Instance{
 		ID:     42,
 		Status: linodego.InstanceBooting,
@@ -43,19 +49,22 @@ func Test_Linode_Provision(t *testing.T) {
 	mockClient.EXPECT().CreateInstance(gomock.Any()).Return(returnedInstance, nil).Times(1).
 		Do(func(instanceOptions linodego.InstanceCreateOptions) {
 			if instanceOptions.Label != expectedInstanceOptions.Label {
-				t.Fail()
+				t.Fatalf("Label didn't match")
 			}
 			if instanceOptions.StackScriptID != expectedInstanceOptions.StackScriptID {
-				t.Fail()
+				t.Fatalf("StackScriptID didn't match")
 			}
 			if instanceOptions.Image != expectedInstanceOptions.Image {
-				t.Fail()
+				t.Fatalf("Image didn't match")
 			}
 			if instanceOptions.Region != expectedInstanceOptions.Region {
-				t.Fail()
+				t.Fatalf("Region didn't match")
 			}
 			if instanceOptions.Type != expectedInstanceOptions.Type {
-				t.Fail()
+				t.Fatalf("Type didn't match")
+			}
+			if len(instanceOptions.Tags) != len(expectedInstanceOptions.Tags) {
+				t.Fatalf("tags don't match")
 			}
 		})
 	provisionedHost, _ := provisioner.Provision(host)
