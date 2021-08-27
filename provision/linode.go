@@ -3,11 +3,12 @@ package provision
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/linode/linodego"
 	"github.com/sethvargo/go-password/password"
 	"golang.org/x/oauth2"
-	"net/http"
-	"strconv"
 )
 
 type LinodeInterface interface {
@@ -65,6 +66,10 @@ func NewLinodeProvisioner(apiKey string) (*LinodeProvisioner, error) {
 // Provision provisions a new Linode instance as an exit node
 func (p *LinodeProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 
+	if len(host.Name) > 32 {
+		return nil, fmt.Errorf("name cannot be longer than 32 characters for Linode due to label limitations")
+	}
+
 	// Stack script is how linode does the cloud-init when provisioning a VM.
 	// Stack script is the inlets user data containing inlets auth token.
 	// Making stack script public will allow everyone to read the stack script
@@ -87,8 +92,13 @@ func (p *LinodeProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) 
 		return nil, err
 	}
 	instanceOptions := linodego.InstanceCreateOptions{
-		Label: "inlets-" + host.Name, StackScriptID: stackscript.ID,
-		Image: host.OS, Region: host.Region, Type: host.Plan, RootPass: rootPassword,
+		Label:         host.Name,
+		StackScriptID: stackscript.ID,
+		Image:         host.OS,
+		Region:        host.Region,
+		Type:          host.Plan,
+		RootPass:      rootPassword,
+		Tags:          []string{"inlets"},
 	}
 	instance, err := p.client.CreateInstance(instanceOptions)
 	if err != nil {
