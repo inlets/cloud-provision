@@ -69,22 +69,18 @@ func (p *ScalewayProvisioner) Provision(host BasicHost) (*ProvisionedHost, error
 
 	server := res.Server
 
-	err = p.instanceAPI.SetServerUserData(&instance.SetServerUserDataRequest{
+	if err := p.instanceAPI.SetServerUserData(&instance.SetServerUserDataRequest{
 		ServerID: server.ID,
 		Key:      "cloud-init",
 		Content:  strings.NewReader(host.UserData),
-	})
-
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
-	_, err = p.instanceAPI.ServerAction(&instance.ServerActionRequest{
+	if _, err = p.instanceAPI.ServerAction(&instance.ServerActionRequest{
 		ServerID: server.ID,
 		Action:   instance.ServerActionPoweron,
-	})
-
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
@@ -112,6 +108,7 @@ func (p *ScalewayProvisioner) Status(id string) (*ProvisionedHost, error) {
 func (p *ScalewayProvisioner) Delete(request HostDeleteRequest) error {
 	var id string
 	var err error
+
 	if len(request.ID) > 0 {
 		id = request.ID
 	} else {
@@ -120,34 +117,34 @@ func (p *ScalewayProvisioner) Delete(request HostDeleteRequest) error {
 			return err
 		}
 	}
+
 	server, err := p.instanceAPI.GetServer(&instance.GetServerRequest{
 		ServerID: id,
 	})
 
-	err = p.instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
-		ServerID: id,
-		Action:   instance.ServerActionPoweroff,
-		Timeout:  5 * time.Minute,
-	})
-
 	if err != nil {
 		return err
 	}
 
-	err = p.instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+	timeout := time.Minute * 5
+	if err = p.instanceAPI.ServerActionAndWait(&instance.ServerActionAndWaitRequest{
 		ServerID: id,
-	})
+		Action:   instance.ServerActionPoweroff,
+		Timeout:  &timeout,
+	}); err != nil {
+		return err
+	}
 
-	if err != nil {
+	if err = p.instanceAPI.DeleteServer(&instance.DeleteServerRequest{
+		ServerID: id,
+	}); err != nil {
 		return err
 	}
 
 	for _, volume := range server.Server.Volumes {
-		err := p.instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
+		if err := p.instanceAPI.DeleteVolume(&instance.DeleteVolumeRequest{
 			VolumeID: volume.ID,
-		})
-
-		if err != nil {
+		}); err != nil {
 			return err
 		}
 	}
