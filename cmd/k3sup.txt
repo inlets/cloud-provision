@@ -1,5 +1,7 @@
-#!/bin/bash
-
-curl -SLs https://k3sup.dev | sh
-k3sup install --local --k3s-channel stable
-
+#cloud-config
+ssh_authorized_keys:
+## Note: Replace with your own public key
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQD5P+iIgayz0nM6ra5y25KyKEPZyyRiXssOQ92GS7+JHKcerHndzbgWHUBH4Sc0HE/IeIFiZ20iYVBMLJZteXfrrEV91LNPApZ010RRNehzGIfPj0C/5bNVA3NtwsXWtz6O17goEPlblhcbJ1XoS5xdy4U2GMfaB8C9bZ0RvYFuXP+FJfgvJ9mp4MesLKMH/rKUc7uLIWCQWgrTLoTx1r+merWkQCiWU8onvfh+B7vXggY9ffOxADJ+JqXjEbG49CiXG3zJq2xnbiyf0zVvvG2Utr45lPm1cxbqch5BdJrZpIb8qSvjuV/oq6AUvUqpBei2YLZKz1sPKONkBB1t5e3Xa9+PYB19PUmn8/WUQYWGJ4LB5mTe87nfs1Q1p/cQe4pq+Y8s3rUitnqwv16g5CdUAXG8KPWlAXB+VK04cj1E3CYkEOUIeeeyUDlMPezrEFEKjDcqhaReDMjHMma95SeMjlt3ZrO2FsXjmgLfjv5kvsWFZdDjl3zQovVfs+pVzGk= alex@am1.local
+runcmd:
+  - curl -SLs https://get.k3sup.dev | sh
+  - k3sup install --local --k3s-channel stable
