@@ -6,6 +6,12 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"strings"
+	"unicode/utf16"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
@@ -15,11 +21,6 @@ import (
 	"github.com/dimchansky/utfbom"
 	"github.com/google/uuid"
 	"github.com/sethvargo/go-password/password"
-	"io/ioutil"
-	"log"
-	"os"
-	"strings"
-	"unicode/utf16"
 )
 
 const AzureStatusSucceeded = "Succeeded"
