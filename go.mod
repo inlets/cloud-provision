@@ -6,7 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.75
 	github.com/digitalocean/godo v1.83.0
 	github.com/dimchansky/utfbom v1.1.1
-	github.com/dirien/ovh-go-sdk v0.1.1
+	github.com/dirien/ovh-go-sdk v0.2.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-retryablehttp v0.7.1
@@ -45,7 +45,7 @@ require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/ovh/go-ovh v1.1.0 // indirect
+	github.com/ovh/go-ovh v1.3.0 // indirect
 	github.com/pkg/browser v0.0.0-20210115035449-ce105d075bb4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/client_golang v1.13.0 // indirect
