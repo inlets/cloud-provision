@@ -6,18 +6,17 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/compute/armcompute"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 	"unicode/utf16"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2017-12-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/dimchansky/utfbom"
 	"github.com/google/uuid"
 	"github.com/sethvargo/go-password/password"
@@ -26,11 +25,11 @@ import (
 const AzureStatusSucceeded = "Succeeded"
 
 type AzureProvisioner struct {
-	subscriptionId    string
-	resourceGroupName string
-	deploymentName    string
-	authorizer        autorest.Authorizer
-	ctx               context.Context
+	subscriptionId       string
+	resourceGroupName    string
+	deploymentName       string
+	azidentityCredential *azidentity.EnvironmentCredential
+	ctx                  context.Context
 }
 
 var fileToEnvMap = map[string]string{
@@ -114,12 +113,12 @@ func NewAzureProvisioner(subscriptionId, authFileContents string) (*AzureProvisi
 			log.Printf("Failed to set env: '%s', error: '%s'", fileKey, err.Error())
 		}
 	}
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	credential, err := azidentity.NewEnvironmentCredential(nil)
 	ctx := context.Background()
 	return &AzureProvisioner{
-		subscriptionId: subscriptionId,
-		authorizer:     authorizer,
-		ctx:            ctx,
+		subscriptionId:       subscriptionId,
+		azidentityCredential: credential,
+		ctx:                  ctx,
 	}, err
 }
 
@@ -152,15 +151,17 @@ func (p *AzureProvisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 
 // Status checks the status of the provisioning Azure exit node
 func (p *AzureProvisioner) Status(id string) (*ProvisionedHost, error) {
-	deploymentsClient := resources.NewDeploymentsClient(p.subscriptionId)
-	deploymentsClient.Authorizer = p.authorizer
+	deploymentsClient, err := armresources.NewDeploymentsClient(p.subscriptionId, p.azidentityCredential, nil)
+	if err != nil {
+		return nil, err
+	}
 
 	resourceGroupName, deploymentName, err := getAzureFieldsFromID(id)
 	if err != nil {
 		return nil, err
 	}
 
-	deployment, err := deploymentsClient.Get(p.ctx, resourceGroupName, deploymentName)
+	deployment, err := deploymentsClient.Get(p.ctx, resourceGroupName, deploymentName, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +169,7 @@ func (p *AzureProvisioner) Status(id string) (*ProvisionedHost, error) {
 	if *deployment.Properties.ProvisioningState == AzureStatusSucceeded {
 		deploymentStatus = ActiveStatus
 	} else {
-		deploymentStatus = *deployment.Properties.ProvisioningState
+		deploymentStatus = string(*deployment.Properties.ProvisioningState)
 	}
 	IP := ""
 	if deploymentStatus == ActiveStatus {
@@ -183,25 +184,32 @@ func (p *AzureProvisioner) Status(id string) (*ProvisionedHost, error) {
 
 // Delete deletes the Azure exit node
 func (p *AzureProvisioner) Delete(request HostDeleteRequest) error {
-	groupsClient := resources.NewGroupsClient(p.subscriptionId)
-	groupsClient.Authorizer = p.authorizer
+	groupsClient, err := armresources.NewResourceGroupsClient(p.subscriptionId, p.azidentityCredential, nil)
+	if err != nil {
+		return err
+	}
 	resourceGroupName, _, err := getAzureFieldsFromID(request.ID)
 	if err != nil {
 		return err
 	}
-	_, err = groupsClient.Delete(p.ctx, resourceGroupName)
+	_, err = groupsClient.BeginDelete(p.ctx, resourceGroupName, nil)
 	return err
 }
 
-func createGroup(p *AzureProvisioner, host BasicHost) (group resources.Group, err error) {
-	groupsClient := resources.NewGroupsClient(p.subscriptionId)
-	groupsClient.Authorizer = p.authorizer
-
-	return groupsClient.CreateOrUpdate(
+func createGroup(p *AzureProvisioner, host BasicHost) (*armresources.ResourceGroup, error) {
+	groupsClient, err := armresources.NewResourceGroupsClient(p.subscriptionId, p.azidentityCredential, nil)
+	if err != nil {
+		return nil, err
+	}
+	resourceGroupResp, err := groupsClient.CreateOrUpdate(
 		p.ctx,
 		p.resourceGroupName,
-		resources.Group{
-			Location: to.StringPtr(host.Region)})
+		armresources.ResourceGroup{Location: to.Ptr(host.Region)}, nil)
+
+	if err != nil {
+		return nil, err
+	}
+	return &resourceGroupResp.ResourceGroup, nil
 }
 
 func getSecurityRuleList(host BasicHost) []interface{} {
@@ -385,10 +393,10 @@ func getTemplate(host BasicHost) map[string]interface{} {
 				"apiVersion": "2019-02-01",
 				"location":   host.Region,
 				"properties": map[string]interface{}{
-					"publicIpAllocationMethod": network.Static,
+					"publicIpAllocationMethod": armnetwork.IPAllocationMethodStatic,
 				},
 				"sku": map[string]interface{}{
-					"name": network.PublicIPAddressSkuNameBasic,
+					"name": armnetwork.PublicIPAddressSKUNameBasic,
 				},
 			},
 			getTemplateResourceVirtualMachine(host),
@@ -437,7 +445,7 @@ func getParameters(p *AzureProvisioner, host BasicHost) (parameters map[string]i
 		"virtualMachineName":  azureParameterValue(host.Name),
 		"virtualMachineRG":    azureParameterValue(p.resourceGroupName),
 		"osDiskType": map[string]interface{}{
-			"value": compute.StandardLRS,
+			"value": armcompute.StorageAccountTypesStandardLRS,
 		},
 		"virtualMachineSize": azureParameterValue(host.Plan),
 		"adminUsername":      azureParameterValue("inletsuser"),
@@ -454,20 +462,23 @@ func createDeployment(p *AzureProvisioner, host BasicHost) (err error) {
 	host.Additional["adminPassword"] = adminPassword
 	template := getTemplate(host)
 	params := getParameters(p, host)
-	deploymentsClient := resources.NewDeploymentsClient(p.subscriptionId)
-	deploymentsClient.Authorizer = p.authorizer
+	deploymentsClient, err := armresources.NewDeploymentsClient(p.subscriptionId, p.azidentityCredential, nil)
+	if err != nil {
+		return
+	}
 
-	_, err = deploymentsClient.CreateOrUpdate(
+	_, err = deploymentsClient.BeginCreateOrUpdate(
 		p.ctx,
 		p.resourceGroupName,
 		p.deploymentName,
-		resources.Deployment{
-			Properties: &resources.DeploymentProperties{
+		armresources.Deployment{
+			Properties: &armresources.DeploymentProperties{
 				Template:   template,
 				Parameters: params,
-				Mode:       resources.Complete,
+				Mode:       to.Ptr(armresources.DeploymentModeComplete),
 			},
 		},
+		nil,
 	)
 	return
 }
