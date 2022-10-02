@@ -343,10 +343,10 @@ func Test_Azure_Parameters(t *testing.T) {
 	}
 	ctx := context.Background()
 	provisioner := AzureProvisioner{
-		subscriptionId:    "",
-		resourceGroupName: "inlets-peaceful-chaum1",
-		authorizer:        nil,
-		ctx:               ctx,
+		subscriptionId:       "",
+		resourceGroupName:    "inlets-peaceful-chaum1",
+		azidentityCredential: nil,
+		ctx:                  ctx,
 	}
 	host := BasicHost{
 		Name:     "peaceful-chaum1",
