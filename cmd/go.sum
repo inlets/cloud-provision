@@ -141,8 +141,6 @@ github.com/hetznercloud/hcloud-go v1.18.2/go.mod h1:EhElojlVU1biA5JgBaV8rRU1vE5+
 github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpOxQnU=
 github.com/imdario/mergo v0.3.5 h1:JboBksRwiiAJWvIYJVo46AfV+IAIKZpfrSzVKj42R4Q=
 github.com/imdario/mergo v0.3.5/go.mod h1:2EnlNZ0deacrJVfApfmtdGgDfMuh/nq6Ok1EcJh5FfA=
-github.com/inlets/cloud-provision v0.0.0-20210717102404-016f5231b09e h1:VkNdQe7+io6kQWTvApDE19vVRKP1o7dPHzOMJHLm06Y=
-github.com/inlets/cloud-provision v0.0.0-20210717102404-016f5231b09e/go.mod h1:jeujEe39lFs3CP+rzvqSmlzTJfOKohSPBye9P7Ms2oQ=
 github.com/inlets/cloud-provision v0.5.5 h1:FbBhD4f7hfC2KzY9litxP0C9XlX0K9sgCQHpD6WZRkY=
 github.com/inlets/cloud-provision v0.5.5/go.mod h1:T69DDSmIHdx21PWqLM+zie/1P4rnJIeMn5dyAWWf164=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=

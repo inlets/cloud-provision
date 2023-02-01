@@ -27,20 +27,20 @@ func main() {
 	flag.Parse()
 
 	if len(accessToken) == 0 {
-		fmt.Fprintf(os.Stderr, "--access-token required")
+		fmt.Fprintf(os.Stderr, "--access-token required\n")
 		os.Exit(1)
 	}
 
 	provisioner, err := provision.NewDigitalOceanProvisioner(accessToken)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s", err.Error())
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
 
 	if len(userDataFile) > 0 {
 		res, err := ioutil.ReadFile(userDataFile)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err.Error())
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 			os.Exit(1)
 		}
 
@@ -58,7 +58,7 @@ func main() {
 	})
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s", err.Error())
+		fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		os.Exit(1)
 	}
 
@@ -71,7 +71,7 @@ func main() {
 		res, err := provisioner.Status(res.ID)
 
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "%s", err.Error())
+			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 			os.Exit(1)
 		}
 		if res.Status == provision.ActiveStatus {
