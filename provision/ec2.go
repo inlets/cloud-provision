@@ -46,6 +46,8 @@ func (p *EC2Provisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 
 	ports := host.Additional["ports"]
 
+	keyName := host.Additional["key-name"]
+
 	extraPorts, err := parsePorts(ports)
 	if err != nil {
 		return nil, err
@@ -69,8 +71,7 @@ func (p *EC2Provisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 	if len(subnetID) > 0 {
 		networkSpec.SubnetId = aws.String(subnetID)
 	}
-
-	runResult, err := p.ec2Provisioner.RunInstances(&ec2.RunInstancesInput{
+	runInput := &ec2.RunInstancesInput{
 		ImageId:      image,
 		InstanceType: aws.String(host.Plan),
 		MinCount:     aws.Int64(1),
@@ -79,7 +80,13 @@ func (p *EC2Provisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 		NetworkInterfaces: []*ec2.InstanceNetworkInterfaceSpecification{
 			&networkSpec,
 		},
-	})
+	}
+
+	if len(keyName) > 0 {
+		runInput.KeyName = aws.String(keyName)
+	}
+
+	runResult, err := p.ec2Provisioner.RunInstances(runInput)
 	if err != nil {
 		// clean up SG if there was an issue provisioning the EC2 instance
 		input := ec2.DeleteSecurityGroupInput{
