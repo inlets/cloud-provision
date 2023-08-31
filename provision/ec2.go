@@ -34,15 +34,11 @@ func (p *EC2Provisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 	if err != nil {
 		return nil, err
 	}
+	controlPort := 8123
 
-	port, err := strconv.Atoi(host.Additional["inlets-port"])
-	if err != nil {
-		return nil, err
-	}
+	openHighPortsV := host.Additional["pro"]
 
-	proV := host.Additional["pro"]
-
-	proPorts, _ := strconv.ParseBool(proV)
+	openHighPorts, _ := strconv.ParseBool(openHighPortsV)
 
 	ports := host.Additional["ports"]
 
@@ -56,7 +52,7 @@ func (p *EC2Provisioner) Provision(host BasicHost) (*ProvisionedHost, error) {
 	var vpcID = host.Additional["vpc-id"]
 	var subnetID = host.Additional["subnet-id"]
 
-	groupID, name, err := p.createEC2SecurityGroup(vpcID, port, proPorts, extraPorts)
+	groupID, name, err := p.createEC2SecurityGroup(vpcID, controlPort, openHighPorts, extraPorts)
 	if err != nil {
 		return nil, err
 	}
