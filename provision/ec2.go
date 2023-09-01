@@ -270,6 +270,8 @@ func (p *EC2Provisioner) createEC2SecurityGroup(vpcID string, controlPort int, o
 	if len(extraPorts) > 0 {
 		// disable high port range if extra ports are specified
 		highPortRange = []int{}
+
+		ports = append(ports, extraPorts...)
 	}
 
 	groupName := "inlets-" + uuid.New().String()
