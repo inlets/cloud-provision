@@ -1,6 +1,6 @@
 module github.com/inlets/cloud-provision
 
-go 1.21
+go 1.22
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.1.3
@@ -14,10 +14,8 @@ require (
 	github.com/dirien/ovh-go-sdk v0.2.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.5.0
-	github.com/hashicorp/go-retryablehttp v0.7.5
 	github.com/hetznercloud/hcloud-go v1.39.0
 	github.com/linode/linodego v1.12.0
-	github.com/packethost/packngo v0.29.0
 	github.com/scaleway/scaleway-sdk-go v1.0.0-beta.12
 	github.com/sethvargo/go-password v0.2.0
 	github.com/vultr/govultr/v2 v2.17.2
@@ -44,6 +42,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
+	github.com/hashicorp/go-retryablehttp v0.7.5 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
