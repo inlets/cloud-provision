@@ -13,6 +13,7 @@ func Test_makeUserdata_InletsPro(t *testing.T) {
 	wantUserdata := `#!/bin/bash
 export AUTHTOKEN="auth"
 export IP=$(curl -sfSL https://checkip.amazonaws.com)
+export PROXY_PROTO=""
 
 curl -SLsf https://github.com/inlets/inlets-pro/releases/download/0.7.0/inlets-pro -o /tmp/inlets-pro && \
   chmod +x /tmp/inlets-pro  && \
@@ -22,12 +23,40 @@ curl -SLsf https://github.com/inlets/inlets-pro/releases/download/0.7.0/inlets-p
   mv inlets-pro.service /etc/systemd/system/inlets-pro.service && \
   echo "AUTHTOKEN=$AUTHTOKEN" >> /etc/default/inlets-pro && \
   echo "IP=$IP" >> /etc/default/inlets-pro && \
+  echo "PROXY_PROTO=$PROXY_PROTO" >> /etc/default/inlets-pro && \
   systemctl daemon-reload && \
   systemctl start inlets-pro && \
   systemctl enable inlets-pro
 `
 
 	// ioutil.WriteFile("/tmp/pro", []byte(userData), 0600)
+	if userData != wantUserdata {
+		t.Errorf("want: %s, but got: %s", wantUserdata, userData)
+	}
+}
+
+func Test_makeUserdata_InletsPro_WithProxyProto(t *testing.T) {
+	userData := MakeExitServerUserdataWithProxyProto("auth", "0.7.0", "v1")
+
+	wantUserdata := `#!/bin/bash
+export AUTHTOKEN="auth"
+export IP=$(curl -sfSL https://checkip.amazonaws.com)
+export PROXY_PROTO="v1"
+
+curl -SLsf https://github.com/inlets/inlets-pro/releases/download/0.7.0/inlets-pro -o /tmp/inlets-pro && \
+  chmod +x /tmp/inlets-pro  && \
+  mv /tmp/inlets-pro /usr/local/bin/inlets-pro
+
+curl -SLsf https://github.com/inlets/inlets-pro/releases/download/0.7.0/inlets-pro.service -o inlets-pro.service && \
+  mv inlets-pro.service /etc/systemd/system/inlets-pro.service && \
+  echo "AUTHTOKEN=$AUTHTOKEN" >> /etc/default/inlets-pro && \
+  echo "IP=$IP" >> /etc/default/inlets-pro && \
+  echo "PROXY_PROTO=$PROXY_PROTO" >> /etc/default/inlets-pro && \
+  systemctl daemon-reload && \
+  systemctl start inlets-pro && \
+  systemctl enable inlets-pro
+`
+
 	if userData != wantUserdata {
 		t.Errorf("want: %s, but got: %s", wantUserdata, userData)
 	}
